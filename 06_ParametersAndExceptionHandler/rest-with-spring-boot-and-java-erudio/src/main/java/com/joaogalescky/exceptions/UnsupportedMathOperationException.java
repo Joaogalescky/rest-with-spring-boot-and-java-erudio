@@ -1,4 +1,4 @@
-package com.joaogalescky.exception;
+package com.joaogalescky.exceptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
