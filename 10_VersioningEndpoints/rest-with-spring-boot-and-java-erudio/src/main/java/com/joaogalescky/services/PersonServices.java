@@ -10,6 +10,7 @@ import com.joaogalescky.data.vo.v1.PersonVO;
 import com.joaogalescky.data.vo.v2.PersonVOV2;
 import com.joaogalescky.exceptions.ResourceNotFoundException;
 import com.joaogalescky.mapper.DozerMapper;
+import com.joaogalescky.mapper.custom.PersonMapper;
 import com.joaogalescky.model.Person;
 import com.joaogalescky.repositories.PersonRepository;
 
@@ -20,6 +21,9 @@ public class PersonServices {
 
 	@Autowired
 	PersonRepository repository;
+
+	@Autowired
+	PersonMapper mapper;
 
 	public List<PersonVO> findAll() {
 		logger.info("Finding all people!");
@@ -42,8 +46,8 @@ public class PersonServices {
 
 	public PersonVOV2 createV2(PersonVOV2 person) {
 		logger.info("Creating one person with V2!");
-		var entity = DozerMapper.parseObject(person, Person.class);
-		var vo = DozerMapper.parseObject(repository.save(entity), PersonVOV2.class);
+		var entity = mapper.convertVoToEntity(person);
+		var vo = mapper.convertEntityToVO(repository.save(entity));
 		return vo;
 	}
 
