@@ -26,7 +26,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController // ResponseBody + Controller
 @RequestMapping("/api/person/v1")
-@Tag(name = "People", description = "Endpoints for managing people")
+@Tag(name = "Person", description = "Endpoints for managing people")
 public class PersonController {
 
 	@Autowired // private PersonServices service = new PersonServices();
