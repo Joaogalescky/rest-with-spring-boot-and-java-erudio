@@ -1,4 +1,4 @@
-package com.joaogalescky.securityJwt;
+package com.joaogalescky.security.jwt;
 
 import java.util.Base64;
 import java.util.Date;
