@@ -10,6 +10,6 @@ import com.joaogalescky.model.User;
 
 @Repository // Opcional a partir da versão Spring Boot 3.0.1
 public interface UserRepository extends JpaRepository<User, Long> {
-	@Query("SELECT u FROM User WHERE u.userName =:userName")
+	@Query("SELECT u FROM User u WHERE u.userName =:userName")
 	User findByUsername(@Param("userName") String userName);
 }
