@@ -1,4 +1,4 @@
-package com.joaogalescky.integrationtests.controller.cors.withjson.copy;
+package com.joaogalescky.integrationtests.controller.cors.withjson;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertNotNull;
