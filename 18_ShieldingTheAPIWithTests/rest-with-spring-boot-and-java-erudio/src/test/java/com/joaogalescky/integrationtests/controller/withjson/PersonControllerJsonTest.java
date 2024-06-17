@@ -146,6 +146,67 @@ public class PersonControllerJsonTest extends AbstractIntegrationTest {
 		assertEquals("Male", persistedPerson.getGender());
 	}
 
+	@Test
+	@Order(4)
+	public void testDelete() throws JsonMappingException, JsonProcessingException {
+
+		given().spec(specification).contentType(TestConfigs.CONTENT_TYPE_JSON).pathParam("id", person.getId()).when()
+				.delete("{id}").then().statusCode(204);
+	}
+
+	@Test
+	@Order(5)
+	public void testFindAll() throws JsonMappingException, JsonProcessingException {
+
+		var content = given().spec(specification).contentType(TestConfigs.CONTENT_TYPE_JSON).when().get().then()
+				.statusCode(200).extract().body().asString();
+
+		List<PersonVO> people = objectMapper.readValue(content, new TypeReference<List<PersonVO>>() {
+		});
+
+		PersonVO foundPersonOne = people.get(0);
+
+		assertNotNull(foundPersonOne.getId());
+		assertNotNull(foundPersonOne.getFirstName());
+		assertNotNull(foundPersonOne.getLastName());
+		assertNotNull(foundPersonOne.getAddress());
+		assertNotNull(foundPersonOne.getGender());
+
+		assertEquals(1, foundPersonOne.getId());
+
+		assertEquals("César", foundPersonOne.getFirstName());
+		assertEquals("Lattes", foundPersonOne.getLastName());
+		assertEquals("Curitiba", foundPersonOne.getAddress());
+		assertEquals("Male", foundPersonOne.getGender());
+
+		PersonVO foundPersonFive = people.get(4);
+
+		assertNotNull(foundPersonFive.getId());
+		assertNotNull(foundPersonFive.getFirstName());
+		assertNotNull(foundPersonFive.getLastName());
+		assertNotNull(foundPersonFive.getAddress());
+		assertNotNull(foundPersonFive.getGender());
+
+		assertEquals(5, foundPersonFive.getId());
+
+		assertEquals("Maria", foundPersonFive.getFirstName());
+		assertEquals("von Paumgartten Deane", foundPersonFive.getLastName());
+		assertEquals("Rio de Janeiro", foundPersonFive.getAddress());
+		assertEquals("Female", foundPersonFive.getGender());
+	}
+
+	@Test
+	@Order(6)
+	public void testFindAllWithoutToken() throws JsonMappingException, JsonProcessingException {
+
+		RequestSpecification specificationWithoutToken = new RequestSpecBuilder().setBasePath("/api/person/v1")
+				.setPort(TestConfigs.SERVER_PORT).addFilter(new RequestLoggingFilter(LogDetail.ALL))
+				.addFilter(new ResponseLoggingFilter(LogDetail.ALL)).build();
+
+		given().spec(specificationWithoutToken).contentType(TestConfigs.CONTENT_TYPE_JSON).when().get().then()
+				.statusCode(403);
+	}
+
 	private void mockPerson() {
 		person.setFirstName("Nelson");
 		person.setLastName("Piquet");
