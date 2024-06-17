@@ -32,7 +32,7 @@ import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.specification.RequestSpecification;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT, properties = { "server.port=8888" })
 @TestMethodOrder(OrderAnnotation.class)
 public class BookControllerJsonTest extends AbstractIntegrationTest {
 
@@ -69,7 +69,6 @@ public class BookControllerJsonTest extends AbstractIntegrationTest {
 	@Test
 	@Order(2)
 	public void testCreate() throws JsonMappingException, JsonProcessingException {
-
 		mockBook();
 
 		var content = given().spec(specification).contentType(TestConfigs.CONTENT_TYPE_JSON).body(book).when().post()
@@ -90,7 +89,6 @@ public class BookControllerJsonTest extends AbstractIntegrationTest {
 	@Test
 	@Order(3)
 	public void testUpdate() throws JsonMappingException, JsonProcessingException {
-
 		book.setTitle("Docker Deep Dive - Updated");
 
 		var content = given().spec(specification).contentType(TestConfigs.CONTENT_TYPE_JSON).body(book).when().put()
@@ -136,7 +134,6 @@ public class BookControllerJsonTest extends AbstractIntegrationTest {
 	@Test
 	@Order(6)
 	public void testFindAll() throws JsonMappingException, JsonProcessingException {
-
 		var content = given().spec(specification).contentType(TestConfigs.CONTENT_TYPE_JSON)
 				.queryParams("page", 0, "limit", 5, "direction", "asc").when().get().then().statusCode(200).extract()
 				.body().asString();
