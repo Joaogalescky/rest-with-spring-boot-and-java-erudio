@@ -54,5 +54,4 @@ public class YMLMapper implements ObjectMapper {
 		}
 		return null;
 	}
-
 }
