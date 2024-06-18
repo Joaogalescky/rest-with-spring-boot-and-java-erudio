@@ -32,7 +32,7 @@ import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.specification.RequestSpecification;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT, properties = { "server.port=8888" })
 @TestMethodOrder(OrderAnnotation.class)
 public class BookControllerXmlTest extends AbstractIntegrationTest {
 
@@ -50,7 +50,7 @@ public class BookControllerXmlTest extends AbstractIntegrationTest {
 	}
 
 	@Test
-	@Order(0)
+	@Order(1)
 	public void authorization() throws JsonMappingException, JsonProcessingException {
 		AccountCredentialsVO user = new AccountCredentialsVO("leandro", "admin123");
 
@@ -65,7 +65,7 @@ public class BookControllerXmlTest extends AbstractIntegrationTest {
 	}
 
 	@Test
-	@Order(1)
+	@Order(2)
 	public void testCreate() throws JsonMappingException, JsonProcessingException {
 		mockBook();
 
@@ -86,7 +86,7 @@ public class BookControllerXmlTest extends AbstractIntegrationTest {
 	}
 
 	@Test
-	@Order(2)
+	@Order(3)
 	public void testUpdate() throws JsonMappingException, JsonProcessingException {
 		book.setTitle("Docker Deep Dive - Updated");
 
@@ -107,7 +107,7 @@ public class BookControllerXmlTest extends AbstractIntegrationTest {
 	}
 
 	@Test
-	@Order(3)
+	@Order(4)
 	public void testFindById() throws JsonMappingException, JsonProcessingException {
 		mockBook();
 
@@ -128,14 +128,14 @@ public class BookControllerXmlTest extends AbstractIntegrationTest {
 	}
 
 	@Test
-	@Order(4)
+	@Order(5)
 	public void testDelete() throws JsonMappingException, JsonProcessingException {
 		given().spec(specification).contentType(TestConfigs.CONTENT_TYPE_XML).accept(TestConfigs.CONTENT_TYPE_XML)
 				.pathParam("id", book.getId()).when().delete("{id}").then().statusCode(204);
 	}
 
 	@Test
-	@Order(5)
+	@Order(6)
 	public void testFindAll() throws JsonMappingException, JsonProcessingException {
 		var content = given().spec(specification).contentType(TestConfigs.CONTENT_TYPE_XML)
 				.accept(TestConfigs.CONTENT_TYPE_XML).queryParams("page", 0, "limit", 12, "direction", "asc").when()
@@ -170,7 +170,7 @@ public class BookControllerXmlTest extends AbstractIntegrationTest {
 	}
 
 	@Test
-	@Order(6)
+	@Order(7)
 	public void testFindAllWithoutToken() throws JsonMappingException, JsonProcessingException {
 		RequestSpecification specificationWithoutToken = new RequestSpecBuilder().setBasePath("/api/book/v1")
 				.setPort(TestConfigs.SERVER_PORT).addFilter(new RequestLoggingFilter(LogDetail.ALL))
@@ -178,6 +178,27 @@ public class BookControllerXmlTest extends AbstractIntegrationTest {
 
 		given().spec(specificationWithoutToken).contentType(TestConfigs.CONTENT_TYPE_XML)
 				.accept(TestConfigs.CONTENT_TYPE_XML).when().get().then().statusCode(403);
+	}
+
+	@Test
+	@Order(7)
+	public void testHATEOAS() throws JsonMappingException, JsonProcessingException {
+		var content = given().spec(specification).contentType(TestConfigs.CONTENT_TYPE_XML)
+				.accept(TestConfigs.CONTENT_TYPE_XML).queryParams("page", 0, "size", 12, "direction", "asc").when()
+				.get().then().statusCode(200).extract().body().asString();
+
+		//@formatter:off
+		assertTrue(content.contains("<links><rel>self</rel><href>http://localhost:8888/api/book/v1/3</href></links>"));
+		assertTrue(content.contains("<links><rel>self</rel><href>http://localhost:8888/api/book/v1/5</href></links>"));
+		assertTrue(content.contains("<links><rel>self</rel><href>http://localhost:8888/api/book/v1/7</href></links>"));
+
+		assertTrue(content.contains("<links><rel>first</rel><href>http://localhost:8888/api/book/v1?direction=asc&amp;page=0&amp;size=12&amp;sort=title,asc</href></links>"));
+		assertTrue(content.contains("<links><rel>self</rel><href>http://localhost:8888/api/book/v1?page=0&amp;size=12&amp;direction=asc</href></links>"));
+		assertTrue(content.contains("<links><rel>next</rel><href>http://localhost:8888/api/book/v1?direction=asc&amp;page=1&amp;size=12&amp;sort=title,asc</href></links>"));
+		assertTrue(content.contains("<links><rel>last</rel><href>http://localhost:8888/api/book/v1?direction=asc&amp;page=1&amp;size=12&amp;sort=title,asc</href></links>"));
+
+		assertTrue(content.contains("<page><size>12</size><totalElements>15</totalElements><totalPages>2</totalPages><number>0</number></page>"));
+		//@formatter:off
 	}
 
 	private void mockBook() {
