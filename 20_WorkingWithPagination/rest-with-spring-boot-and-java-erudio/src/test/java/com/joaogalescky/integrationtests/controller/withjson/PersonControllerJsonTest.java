@@ -187,8 +187,9 @@ public class PersonControllerJsonTest extends AbstractIntegrationTest {
 	@Order(6)
 	public void testFindAll() throws JsonMappingException, JsonProcessingException {
 
-		var content = given().spec(specification).contentType(TestConfigs.CONTENT_TYPE_JSON).when().get().then()
-				.statusCode(200).extract().body().asString();
+		var content = given().spec(specification).contentType(TestConfigs.CONTENT_TYPE_JSON)
+				.queryParams("page", 3, "size", 10, "direction", "asc").when().get().then().statusCode(200).extract()
+				.body().asString();
 
 		WrapperPersonVO wrapper = objectMapper.readValue(content, WrapperPersonVO.class);
 		var people = wrapper.getEmbedded().getPersons();
@@ -201,11 +202,11 @@ public class PersonControllerJsonTest extends AbstractIntegrationTest {
 		assertNotNull(foundPersonOne.getGender());
 		assertTrue(foundPersonOne.getEnabled());
 
-		assertEquals(1, foundPersonOne.getId());
+		assertEquals(199, foundPersonOne.getId());
 
-		assertEquals("César", foundPersonOne.getFirstName());
-		assertEquals("Lattes", foundPersonOne.getLastName());
-		assertEquals("Curitiba", foundPersonOne.getAddress());
+		assertEquals("Calv", foundPersonOne.getFirstName());
+		assertEquals("Rodolf", foundPersonOne.getLastName());
+		assertEquals("7 Towne Point", foundPersonOne.getAddress());
 		assertEquals("Male", foundPersonOne.getGender());
 
 		PersonVO foundPersonFive = people.get(4);
@@ -217,11 +218,11 @@ public class PersonControllerJsonTest extends AbstractIntegrationTest {
 		assertNotNull(foundPersonFive.getGender());
 		assertTrue(foundPersonFive.getEnabled());
 
-		assertEquals(5, foundPersonFive.getId());
+		assertEquals(56, foundPersonFive.getId());
 
-		assertEquals("Maria", foundPersonFive.getFirstName());
-		assertEquals("von Paumgartten Deane", foundPersonFive.getLastName());
-		assertEquals("Rio de Janeiro", foundPersonFive.getAddress());
+		assertEquals("Carmelia", foundPersonFive.getFirstName());
+		assertEquals("Wheatley", foundPersonFive.getLastName());
+		assertEquals("72638 8th Park", foundPersonFive.getAddress());
 		assertEquals("Female", foundPersonFive.getGender());
 	}
 
