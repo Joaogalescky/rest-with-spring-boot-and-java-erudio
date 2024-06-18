@@ -23,7 +23,6 @@ import com.joaogalescky.integrationtests.testcontainers.AbstractIntegrationTest;
 import com.joaogalescky.integrationtests.vo.AccountCredentialsVO;
 import com.joaogalescky.integrationtests.vo.PersonVO;
 import com.joaogalescky.integrationtests.vo.pagedmodels.PagedModelPerson;
-import com.joaogalescky.integrationtests.vo.wrappers.WrapperPersonVO;
 
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
@@ -235,8 +234,8 @@ public class PersonControllerXmlTest extends AbstractIntegrationTest {
 	public void testFindByName() throws JsonMappingException, JsonProcessingException {
 		var content = given().spec(specification).contentType(TestConfigs.CONTENT_TYPE_XML)
 				.accept(TestConfigs.CONTENT_TYPE_XML).pathParam("firstName", "cés")
-				.queryParams("page", 0, "size", 6, "direction", "asc").when().get("findsPersonByName/{firstName}").then()
-				.statusCode(200).extract().body().asString();
+				.queryParams("page", 0, "size", 6, "direction", "asc").when().get("findsPersonByName/{firstName}")
+				.then().statusCode(200).extract().body().asString();
 
 		PagedModelPerson wrapper = objectMapper.readValue(content, PagedModelPerson.class);
 		var people = wrapper.getContent();
@@ -268,6 +267,27 @@ public class PersonControllerXmlTest extends AbstractIntegrationTest {
 
 		given().spec(specificationWithoutToken).contentType(TestConfigs.CONTENT_TYPE_XML)
 				.accept(TestConfigs.CONTENT_TYPE_XML).when().get().then().statusCode(403);
+	}
+
+	@Test
+	@Order(9)
+	public void testHATEOAS() throws JsonMappingException, JsonProcessingException {
+		var content = given().spec(specification).contentType(TestConfigs.CONTENT_TYPE_XML)
+				.accept(TestConfigs.CONTENT_TYPE_XML).queryParams("page", 5, "size", 12, "direction", "asc").when()
+				.get().then().statusCode(200).extract().body().asString();
+
+		//@formatter:off
+		assertTrue(content.contains("<links><rel>self</rel><href>http://localhost:8888/api/person/v1/44</href></links>"));
+		assertTrue(content.contains("<links><rel>self</rel><href>http://localhost:8888/api/person/v1/192</href></links>"));
+		assertTrue(content.contains("<links><rel>self</rel><href>http://localhost:8888/api/person/v1/15</href></links>"));
+		
+		assertTrue(content.contains("<links><rel>first</rel><href>http://localhost:8888/api/person/v1?limit=12&amp;direction=asc&amp;page=0&amp;size=12&amp;sort=firstName,asc</href></links>"));
+		assertTrue(content.contains("<links><rel>prev</rel><href>http://localhost:8888/api/person/v1?limit=12&amp;direction=asc&amp;page=4&amp;size=12&amp;sort=firstName,asc</href></links>"));
+		assertTrue(content.contains("<links><rel>self</rel><href>http://localhost:8888/api/person/v1?page=5&amp;limit=12&amp;direction=asc</href></links>"));
+		assertTrue(content.contains("<links><rel>next</rel><href>http://localhost:8888/api/person/v1?limit=12&amp;direction=asc&amp;page=6&amp;size=12&amp;sort=firstName,asc</href></links>"));
+		assertTrue(content.contains("<links><rel>last</rel><href>http://localhost:8888/api/person/v1?limit=12&amp;direction=asc&amp;page=17&amp;size=12&amp;sort=firstName,asc</href></links>"));
+		assertTrue(content.contains("<page><size>12</size><totalElements>212</totalElements><totalPages>18</totalPages><number>5</number></page>"));
+		//@formatter:on
 	}
 
 	private void mockPerson() {

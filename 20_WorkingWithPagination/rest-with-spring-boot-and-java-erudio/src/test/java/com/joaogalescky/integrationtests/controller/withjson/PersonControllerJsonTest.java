@@ -231,8 +231,8 @@ public class PersonControllerJsonTest extends AbstractIntegrationTest {
 	public void testFindByName() throws JsonMappingException, JsonProcessingException {
 		var content = given().spec(specification).contentType(TestConfigs.CONTENT_TYPE_JSON)
 				.accept(TestConfigs.CONTENT_TYPE_JSON).pathParam("firstName", "cés")
-				.queryParams("page", 0, "size", 6, "direction", "asc").when().get("findsPersonByName/{firstName}").then()
-				.statusCode(200).extract().body().asString();
+				.queryParams("page", 0, "size", 6, "direction", "asc").when().get("findsPersonByName/{firstName}")
+				.then().statusCode(200).extract().body().asString();
 
 		WrapperPersonVO wrapper = objectMapper.readValue(content, WrapperPersonVO.class);
 		var people = wrapper.getEmbedded().getPersons();
@@ -265,6 +265,28 @@ public class PersonControllerJsonTest extends AbstractIntegrationTest {
 
 		given().spec(specificationWithoutToken).contentType(TestConfigs.CONTENT_TYPE_JSON).when().get().then()
 				.statusCode(403);
+	}
+
+	@Test
+	@Order(9)
+	public void testHATEOAS() throws JsonMappingException, JsonProcessingException {
+		var content = given().spec(specification).contentType(TestConfigs.CONTENT_TYPE_JSON)
+				.accept(TestConfigs.CONTENT_TYPE_JSON).queryParams("page", 5, "size", 12, "direction", "asc").when()
+				.get().then().statusCode(200).extract().body().asString();
+
+		//@formatter:off
+		assertTrue(content.contains("\"_links\":{\"self\":{\"href\":\"http://localhost:8888/api/person/v1/44\"}}"));
+		assertTrue(content.contains("\"_links\":{\"self\":{\"href\":\"http://localhost:8888/api/person/v1/192\"}}"));
+		assertTrue(content.contains("\"_links\":{\"self\":{\"href\":\"http://localhost:8888/api/person/v1/15\"}}"));
+
+		assertTrue(content.contains("\"first\":{\"href\":\"http://localhost:8888/api/person/v1?limit=12&direction=asc&page=0&size=12&sort=firstName,asc\"}"));
+		assertTrue(content.contains("\"prev\":{\"href\":\"http://localhost:8888/api/person/v1?limit=12&direction=asc&page=4&size=12&sort=firstName,asc\"}"));
+		assertTrue(content.contains("\"self\":{\"href\":\"http://localhost:8888/api/person/v1?page=5&limit=12&direction=asc\"}"));
+		assertTrue(content.contains("\"next\":{\"href\":\"http://localhost:8888/api/person/v1?limit=12&direction=asc&page=6&size=12&sort=firstName,asc\"}"));
+		assertTrue(content.contains("\"last\":{\"href\":\"http://localhost:8888/api/person/v1?limit=12&direction=asc&page=17&size=12&sort=firstName,asc\"}"));
+
+		assertTrue(content.contains("\"page\":{\"size\":12,\"totalElements\":212,\"totalPages\":18,\"number\":5}"));
+		//@formatter:om
 	}
 
 	private void mockPerson() {
