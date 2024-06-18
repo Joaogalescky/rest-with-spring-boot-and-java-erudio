@@ -22,6 +22,7 @@ import com.joaogalescky.data.vo.v1.security.TokenVO;
 import com.joaogalescky.integrationtests.testcontainers.AbstractIntegrationTest;
 import com.joaogalescky.integrationtests.vo.AccountCredentialsVO;
 import com.joaogalescky.integrationtests.vo.PersonVO;
+import com.joaogalescky.integrationtests.vo.pagedmodels.PagedModelPerson;
 import com.joaogalescky.integrationtests.vo.wrappers.WrapperPersonVO;
 
 import io.restassured.builder.RequestSpecBuilder;
@@ -189,12 +190,12 @@ public class PersonControllerXmlTest extends AbstractIntegrationTest {
 	@Test
 	@Order(6)
 	public void testFindAll() throws JsonMappingException, JsonProcessingException {
-
 		var content = given().spec(specification).contentType(TestConfigs.CONTENT_TYPE_XML)
-				.accept(TestConfigs.CONTENT_TYPE_XML).when().get().then().statusCode(200).extract().body().asString();
+				.accept(TestConfigs.CONTENT_TYPE_XML).queryParams("page", 3, "size", 10, "direction", "asc").when()
+				.get().then().statusCode(200).extract().body().asString();
 
-		WrapperPersonVO wrapper = objectMapper.readValue(content, WrapperPersonVO.class);
-		var people = wrapper.getEmbedded().getPersons();
+		PagedModelPerson wrapper = objectMapper.readValue(content, PagedModelPerson.class);
+		var people = wrapper.getContent();
 
 		PersonVO foundPersonOne = people.get(0);
 
@@ -205,11 +206,11 @@ public class PersonControllerXmlTest extends AbstractIntegrationTest {
 		assertNotNull(foundPersonOne.getGender());
 		assertTrue(foundPersonOne.getEnabled());
 
-		assertEquals(1, foundPersonOne.getId());
+		assertEquals(199, foundPersonOne.getId());
 
-		assertEquals("César", foundPersonOne.getFirstName());
-		assertEquals("Lattes", foundPersonOne.getLastName());
-		assertEquals("Curitiba", foundPersonOne.getAddress());
+		assertEquals("Calv", foundPersonOne.getFirstName());
+		assertEquals("Rodolf", foundPersonOne.getLastName());
+		assertEquals("7 Towne Point", foundPersonOne.getAddress());
 		assertEquals("Male", foundPersonOne.getGender());
 
 		PersonVO foundPersonFive = people.get(4);
@@ -221,18 +222,46 @@ public class PersonControllerXmlTest extends AbstractIntegrationTest {
 		assertNotNull(foundPersonFive.getGender());
 		assertTrue(foundPersonFive.getEnabled());
 
-		assertEquals(5, foundPersonFive.getId());
+		assertEquals(56, foundPersonFive.getId());
 
-		assertEquals("Maria", foundPersonFive.getFirstName());
-		assertEquals("von Paumgartten Deane", foundPersonFive.getLastName());
-		assertEquals("Rio de Janeiro", foundPersonFive.getAddress());
+		assertEquals("Carmelia", foundPersonFive.getFirstName());
+		assertEquals("Wheatley", foundPersonFive.getLastName());
+		assertEquals("72638 8th Park", foundPersonFive.getAddress());
 		assertEquals("Female", foundPersonFive.getGender());
 	}
 
 	@Test
 	@Order(7)
-	public void testFindAllWithoutToken() throws JsonMappingException, JsonProcessingException {
+	public void testFindByName() throws JsonMappingException, JsonProcessingException {
+		var content = given().spec(specification).contentType(TestConfigs.CONTENT_TYPE_XML)
+				.accept(TestConfigs.CONTENT_TYPE_XML).pathParam("firstName", "cés")
+				.queryParams("page", 0, "size", 6, "direction", "asc").when().get("findsPersonByName/{firstName}").then()
+				.statusCode(200).extract().body().asString();
 
+		PagedModelPerson wrapper = objectMapper.readValue(content, PagedModelPerson.class);
+		var people = wrapper.getContent();
+
+		PersonVO foundPersonOne = people.get(0);
+
+		assertNotNull(foundPersonOne.getId());
+		assertNotNull(foundPersonOne.getFirstName());
+		assertNotNull(foundPersonOne.getLastName());
+		assertNotNull(foundPersonOne.getAddress());
+		assertNotNull(foundPersonOne.getGender());
+
+		assertTrue(foundPersonOne.getEnabled());
+
+		assertEquals(1, foundPersonOne.getId());
+
+		assertEquals("César", foundPersonOne.getFirstName());
+		assertEquals("Lattes", foundPersonOne.getLastName());
+		assertEquals("Curitiba", foundPersonOne.getAddress());
+		assertEquals("Male", foundPersonOne.getGender());
+	}
+
+	@Test
+	@Order(8)
+	public void testFindAllWithoutToken() throws JsonMappingException, JsonProcessingException {
 		RequestSpecification specificationWithoutToken = new RequestSpecBuilder().setBasePath("/api/person/v1")
 				.setPort(TestConfigs.SERVER_PORT).addFilter(new RequestLoggingFilter(LogDetail.ALL))
 				.addFilter(new ResponseLoggingFilter(LogDetail.ALL)).build();
