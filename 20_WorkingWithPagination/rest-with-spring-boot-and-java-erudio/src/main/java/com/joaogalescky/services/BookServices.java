@@ -14,7 +14,9 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 
 import com.joaogalescky.controllers.BookController;
+import com.joaogalescky.controllers.PersonController;
 import com.joaogalescky.data.vo.v1.BookVO;
+import com.joaogalescky.data.vo.v1.PersonVO;
 import com.joaogalescky.exceptions.RequiredObjectIsNullException;
 import com.joaogalescky.exceptions.ResourceNotFoundException;
 import com.joaogalescky.mapper.DozerMapper;
@@ -46,6 +48,22 @@ public class BookServices {
 				findAll(pageable.getPageNumber(), pageable.getPageSize(), "asc"))
 				.withSelfRel();
 		return assembler.toModel(booksVOs, findAllLink);
+		//@formatter:on
+	}
+
+	public PagedModel<EntityModel<BookVO>> findBooksByTitle(String title, Pageable pageable) {
+		//@formatter:off
+		logger.info("Finding book by title!");
+		
+		var bookPage = repository.findBooksByTitle(title, pageable);
+		
+		var bookVosPage = bookPage.map(b -> DozerMapper.parseObject(b, BookVO.class));
+		bookVosPage.map(b -> b.add(linkTo(methodOn(BookController.class).findById(b.getKey())).withSelfRel()));
+		Link link = linkTo(methodOn(BookController.class).findAll(
+				pageable.getPageNumber(), 
+				pageable.getPageSize(), 
+				"asc")).withSelfRel();
+		return assembler.toModel(bookVosPage, link);
 		//@formatter:on
 	}
 
