@@ -15,7 +15,7 @@
 	<name>rest-with-spring-boot-and-java-erudio</name>
 	<description>REST API&apos;s RESTFUL - AWS c. Spring Boot, Java e Docker</description>
 	<properties>
-		<java.version>21</java.version>
+		<java.version>19</java.version>
 		<dozer.version>7.0.0</dozer.version>
 		<model-mapper.version>3.1.1</model-mapper.version>
 		<springdoc.version>2.0.2</springdoc.version>
